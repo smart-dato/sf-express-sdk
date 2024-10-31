@@ -89,7 +89,6 @@ class SfExpress
     {
         $response = $this->sendRequest($data, 'IUOP_CREATE_ORDER');
 
-        dump($response['apiResultData']);
         $message = $this->bizCrypt->decrypt($response['apiResultData']);
 
         return json_decode($message, true);
