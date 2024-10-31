@@ -6,9 +6,9 @@ if (! function_exists('pkcs7_encode')) {
         $text_length = strlen($text);
 
         $amount_to_pad = 32 - ($text_length % 32);
-//        if ($amount_to_pad == 0) {
-//            $amount_to_pad = 32;
-//        }
+        //        if ($amount_to_pad == 0) {
+        //            $amount_to_pad = 32;
+        //        }
 
         $pad_chr = chr($amount_to_pad);
         $tmp = str_repeat($pad_chr, $amount_to_pad);
