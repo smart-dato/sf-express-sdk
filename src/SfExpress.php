@@ -23,10 +23,10 @@ class SfExpress
      * @throws ConnectionException
      */
     public function __construct(
-        protected string $baseUrl,
-        protected string $appKey,
-        protected string $appSecret,
-        protected string $encodingAesKey,
+        protected ?string $baseUrl = null,
+        protected ?string $appKey = null,
+        protected ?string $appSecret = null,
+        protected ?string $encodingAesKey = null,
 
     ) {
         $response = self::accessToken(
@@ -55,7 +55,7 @@ class SfExpress
         }
 
         $data = $response->json();
-        if (! array_key_exists('apiResultCode', $data)) {
+        if (!array_key_exists('apiResultCode', $data)) {
             throw new SfExpressGenericException;
         }
 
@@ -121,7 +121,7 @@ class SfExpress
         }
 
         $data = $response->json();
-        if (! array_key_exists('apiResultCode', $data)) {
+        if (!array_key_exists('apiResultCode', $data)) {
             throw new SfExpressGenericException;
         }
 
