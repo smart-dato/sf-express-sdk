@@ -55,7 +55,7 @@ class SfExpress
         }
 
         $data = $response->json();
-        if (!array_key_exists('apiResultCode', $data)) {
+        if (! array_key_exists('apiResultCode', $data)) {
             throw new SfExpressGenericException;
         }
 
@@ -121,7 +121,7 @@ class SfExpress
         }
 
         $data = $response->json();
-        if (!array_key_exists('apiResultCode', $data)) {
+        if (! array_key_exists('apiResultCode', $data)) {
             throw new SfExpressGenericException;
         }
 
