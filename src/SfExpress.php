@@ -42,12 +42,12 @@ class SfExpress
      * @throws ConnectionException
      * @throws SfExpressGenericException
      */
-    public function accessToken(string $appKey, string $appSecret)
+    public function accessToken(?string $appKey = null, ?string $appSecret = null)
     {
         $response = Http::baseUrl($this->baseUrl)
             ->get('/openapi/api/token', [
-                'appKey' => $appKey,
-                'appSecret' => $appSecret,
+                'appKey' => $appKey ?? config('sf-express-sdk.app.key'),
+                'appSecret' => $appSecret ?? config('sf-express-sdk.app.secret'),
             ]);
 
         if ($response->failed()) {
