@@ -95,8 +95,8 @@ it('can create a shipment', function () {
 it('can get shipment details', function () {
     $payload = new ShipmentDetailsPayload(
         customerCode: 'ICRME000SRN93',
-        sfWaybillNumber: "SF1660016101717",
-        customerOrderNumber: "kts_api20210701840182584",
+        sfWaybillNumber: 'SF1660016101717',
+        customerOrderNumber: 'kts_api20210701840182584',
     );
 
     $data = (new SfExpress(
