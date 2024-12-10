@@ -4,6 +4,7 @@ use SmartDato\SfExpress\Enums\Shipment\CurrencyEnum;
 use SmartDato\SfExpress\Enums\Shipment\InterProductCodeEnum;
 use SmartDato\SfExpress\Payloads\ParcelInfoPayload;
 use SmartDato\SfExpress\Payloads\PaymentInfoPayload;
+use SmartDato\SfExpress\Payloads\ShipmentDetailsPayload;
 use SmartDato\SfExpress\Payloads\ShipmentPayload;
 use SmartDato\SfExpress\Payloads\ShippingPartyPayload;
 use SmartDato\SfExpress\Payloads\TrackingPayload;
@@ -84,6 +85,26 @@ it('can create a shipment', function () {
         appSecret: '',
         encodingAesKey: '',
     ))->createShipment(
+        $payload->toJson()
+    );
+
+    expect($data)->toBeArray()
+        ->and($data['msg'])->toBe('Executed successfully');
+})->skip();
+
+it('can get shipment details', function () {
+    $payload = new ShipmentDetailsPayload(
+        customerCode: 'ICRME000SRN93',
+        sfWaybillNumber: "SF1660016101717",
+        customerOrderNumber: "kts_api20210701840182584",
+    );
+
+    $data = (new SfExpress(
+        baseUrl: 'https://api-ifsp-sit.sf.global',
+        appKey: '',
+        appSecret: '',
+        encodingAesKey: '',
+    ))->getShipmentDetails(
         $payload->toJson()
     );
 
