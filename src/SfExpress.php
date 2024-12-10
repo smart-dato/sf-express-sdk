@@ -143,4 +143,12 @@ class SfExpress
 
         return json_decode($message, true);
     }
+
+    public function getShipmentDetails(string $data): array
+    {
+        $response = $this->sendRequest($data, 'IUOP_QUERY_ORDER');
+        $message = $this->bizCrypt->decrypt($response['apiResultData']);
+
+        return json_decode($message, true);
+    }
 }
