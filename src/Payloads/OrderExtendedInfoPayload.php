@@ -3,6 +3,7 @@
 namespace SmartDato\SfExpress\Payloads;
 
 use SmartDato\SfExpress\Contracts\PayloadContract;
+use SmartDato\SfExpress\Enums\OrderExtendedInfo\BusinessMode;
 use SmartDato\SfExpress\Enums\OrderExtendedInfo\IsSelfPickEnum;
 use SmartDato\SfExpress\Enums\OrderExtendedInfo\IsSignBackEnum;
 
@@ -12,8 +13,14 @@ class OrderExtendedInfoPayload implements PayloadContract
         protected ?IsSignBackEnum $isSignBack = null,
         protected ?IsSelfPickEnum $isSelfPick = null,
         protected ?string $signBackWaybillNumber = null,
+
+        protected ?BusinessMode $businessMode = null,
+        protected ?string $senderDeptCode = null,
+        protected ?string $operEmpCode = null,
+
         protected ?string $preMergeSfWaybillNumber = null,
         protected ?string $poNumber = null,
+
         protected ?string $importerCompanyName = null,
         protected ?string $importerPhoneCode = null,
         protected ?string $importerPhoneNumber = null,
@@ -25,11 +32,16 @@ class OrderExtendedInfoPayload implements PayloadContract
 
     public function build(): array
     {
-        return [
+        return array_filter([
             'isSignBack' => $this->isSignBack,
             'isSelfPick' => $this->isSelfPick,
             'signBackWaybillNo' => $this->signBackWaybillNumber,
+            'businessMode' => $this->businessMode?->value,
+            'senderDeptCode' => $this->senderDeptCode,
+            'operEmpCode' => $this->operEmpCode,
+
             'preMergeSfWaybillNo' => $this->preMergeSfWaybillNumber,
+
             'poNumber' => $this->poNumber,
             'importerCompanyName' => $this->importerCompanyName,
             'importerPhoneCode' => $this->importerPhoneCode,
@@ -38,6 +50,8 @@ class OrderExtendedInfoPayload implements PayloadContract
             'importCompTaxNo' => $this->importerCompanyTaxNumber,
             'importCompContacts' => $this->importerCompanyContacts,
             'importCompEmail' => $this->importerCompanyEmail,
-        ];
+        ], function ($value) {
+            return ! is_null($value);
+        });
     }
 }

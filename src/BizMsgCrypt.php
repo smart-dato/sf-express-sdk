@@ -2,21 +2,21 @@
 
 namespace SmartDato\SfExpress;
 
-use Exception;
 use Random\RandomException;
+use SmartDato\SfExpress\Exceptions\InvalidKeyLengthException;
 
 class BizMsgCrypt
 {
     /**
-     * @throws Exception
+     * @throws InvalidKeyLengthException
      */
     public function __construct(
         protected string $token,
         protected string $encodingAesKey,
         protected string $appKey
     ) {
-        if (strlen($encodingAesKey) != 43) {
-            throw new Exception('Invalid AES key length');
+        if (strlen($encodingAesKey) !== 43) {
+            throw new InvalidKeyLengthException('Invalid AES key length');
         }
     }
 

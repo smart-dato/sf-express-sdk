@@ -2,6 +2,7 @@
 
 namespace SmartDato\SfExpress\Payloads;
 
+use JsonException;
 use SmartDato\SfExpress\Contracts\PayloadContract;
 
 class TrackingPayload implements PayloadContract
@@ -14,9 +15,12 @@ class TrackingPayload implements PayloadContract
         protected string $phoneNumber,
     ) {}
 
+    /**
+     * @throws JsonException
+     */
     public function toJson(): string
     {
-        return json_encode($this->build());
+        return json_encode($this->build(), JSON_THROW_ON_ERROR);
     }
 
     public function build(): array

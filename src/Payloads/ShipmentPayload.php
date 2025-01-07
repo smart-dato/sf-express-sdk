@@ -2,6 +2,7 @@
 
 namespace SmartDato\SfExpress\Payloads;
 
+use JsonException;
 use SmartDato\SfExpress\Contracts\PayloadContract;
 use SmartDato\SfExpress\Enums\Shipment\CurrencyEnum;
 use SmartDato\SfExpress\Enums\Shipment\InterProductCodeEnum;
@@ -55,9 +56,12 @@ class ShipmentPayload implements PayloadContract
         protected ?bool $isReturnRouteLabel = null,
     ) {}
 
+    /**
+     * @throws JsonException
+     */
     public function toJson(): string
     {
-        return json_encode($this->build());
+        return json_encode($this->build(), JSON_THROW_ON_ERROR);
     }
 
     public function build(): array
@@ -102,7 +106,7 @@ class ShipmentPayload implements PayloadContract
         $this->pickupAppointTime && $data['pickupAppointTime'] = $this->pickupAppointTime;
         $this->pickupAppointTimeZone && $data['pickupAppointTimeZone'] = $this->pickupAppointTimeZone;
         $this->remark && $data['remark'] = $this->remark;
-        $this->isBbd && $data['isBbd'] = strval($this->isBbd);
+        $this->isBbd && $data['isBbd'] = (string) $this->isBbd;
         $this->orderExtendedInfo && $data['orderExtendedInfo'] = $this->orderExtendedInfo->build();
         $this->customsInfo && $data['customsInfo'] = $this->customsInfo->build();
         $this->addedServices && $data['addServiceInfoList'] = array_map(
@@ -120,7 +124,7 @@ class ShipmentPayload implements PayloadContract
         $this->ecommerceInfo && $data['ecommerceInfo'] = $this->ecommerceInfo->build();
         $this->agentWaybillNumber && $data['agentWaybillNo'] = $this->agentWaybillNumber;
         $this->labelModeSize && $data['labelModeSize'] = $this->labelModeSize;
-        $this->isReturnRouteLabel && $data['isReturnRouteLabel'] = intval($this->isReturnRouteLabel);
+        $this->isReturnRouteLabel && $data['isReturnRouteLabel'] = (int) $this->isReturnRouteLabel;
 
         return $data;
     }

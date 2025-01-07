@@ -6,6 +6,8 @@ use Exception;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use JsonException;
+use Random\RandomException;
 use SmartDato\SfExpress\Exceptions\SfExpressGenericException;
 
 class SfExpress
@@ -21,6 +23,7 @@ class SfExpress
     /**
      * @throws SfExpressGenericException
      * @throws ConnectionException
+     * @throws Exception
      */
     public function __construct(
         protected ?string $baseUrl = null,
@@ -29,7 +32,7 @@ class SfExpress
         protected ?string $encodingAesKey = null,
 
     ) {
-        $response = self::accessToken(
+        $response = $this->accessToken(
             $appKey,
             $appSecret
         );
@@ -91,9 +94,14 @@ class SfExpress
 
         $message = $this->bizCrypt->decrypt($response['apiResultData']);
 
-        return json_decode($message, true);
+        return json_decode($message, true, 512, JSON_THROW_ON_ERROR);
     }
 
+    /**
+     * @throws RandomException
+     * @throws ConnectionException
+     * @throws SfExpressGenericException
+     */
     private function sendRequest($data, $messageType): array
     {
         $encryptedMsg = $this->bizCrypt->encrypt(
@@ -134,6 +142,9 @@ class SfExpress
     }
 
     /**
+     * @throws ConnectionException
+     * @throws JsonException
+     * @throws RandomException
      * @throws SfExpressGenericException
      */
     public function getTrackingStatus(string $data): array
@@ -141,14 +152,20 @@ class SfExpress
         $response = $this->sendRequest($data, 'GTS_QUERY_TRACK');
         $message = $this->bizCrypt->decrypt($response['apiResultData']);
 
-        return json_decode($message, true);
+        return json_decode($message, true, 512, JSON_THROW_ON_ERROR);
     }
 
+    /**
+     * @throws RandomException
+     * @throws SfExpressGenericException
+     * @throws ConnectionException
+     * @throws JsonException
+     */
     public function getShipmentDetails(string $data): array
     {
         $response = $this->sendRequest($data, 'IUOP_QUERY_ORDER');
         $message = $this->bizCrypt->decrypt($response['apiResultData']);
 
-        return json_decode($message, true);
+        return json_decode($message, true, 512, JSON_THROW_ON_ERROR);
     }
 }

@@ -2,8 +2,9 @@
 
 namespace SmartDato\SfExpress\Payloads;
 
-use Exception;
+use JsonException;
 use SmartDato\SfExpress\Contracts\PayloadContract;
+use SmartDato\SfExpress\Exceptions\NoWaybillNumberException;
 
 class ShipmentDetailsPayload implements PayloadContract
 {
@@ -14,18 +15,23 @@ class ShipmentDetailsPayload implements PayloadContract
         protected ?string $customerOrderNumber = null,
     ) {}
 
+    /**
+     * @throws JsonException
+     * @throws NoWaybillNumberException
+     */
     public function toJson(): string
     {
-        return json_encode($this->build());
+        return json_encode($this->build(), JSON_THROW_ON_ERROR);
     }
 
     /**
-     * @throws Exception
+     * @throws NoWaybillNumberException
      */
     public function build(): array
     {
         if (empty($this->sfWaybillNumber) && empty($this->customerOrderNumber)) {
-            throw new Exception('Either the SF waybill No. (parent waybill No.) or customer order No. shall be filled in.');
+            $message = 'Either the SF waybill No. (parent waybill No.) or customer order No. shall be filled in.';
+            throw new NoWaybillNumberException($message);
         }
 
         return [
