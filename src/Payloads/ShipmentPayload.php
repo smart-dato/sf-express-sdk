@@ -45,7 +45,7 @@ class ShipmentPayload implements PayloadContract
         protected ?string $pickupAppointTimeZone = null,
         protected ?string $remark = null,
         protected ?bool $isBbd = null,
-        protected ?OrderExtendedInfoPayload $orderExtendedInfo = null,
+        protected ?OrderExtendInfoPayloadPayload $orderExtendInfo = null,
         protected ?CustomsInfoPayload $customsInfo = null,
         protected ?array $addedServices = null,
         protected ?array $children = null,
@@ -107,7 +107,7 @@ class ShipmentPayload implements PayloadContract
         $this->pickupAppointTimeZone && $data['pickupAppointTimeZone'] = $this->pickupAppointTimeZone;
         $this->remark && $data['remark'] = $this->remark;
         $this->isBbd && $data['isBbd'] = (string) $this->isBbd;
-        $this->orderExtendedInfo && $data['orderExtendedInfo'] = $this->orderExtendedInfo->build();
+        $this->orderExtendInfo && $data['orderExtendInfo'] = $this->orderExtendInfo->build();
         $this->customsInfo && $data['customsInfo'] = $this->customsInfo->build();
         $this->addedServices && $data['addServiceInfoList'] = array_map(
             fn (AddedServiceInfoPayload $addedService) => $addedService->build(),
