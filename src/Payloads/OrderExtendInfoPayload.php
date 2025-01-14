@@ -7,7 +7,7 @@ use SmartDato\SfExpress\Enums\OrderExtendInfo\BusinessMode;
 use SmartDato\SfExpress\Enums\OrderExtendInfo\IsSelfPickEnum;
 use SmartDato\SfExpress\Enums\OrderExtendInfo\IsSignBackEnum;
 
-class OrderExtendInfoPayloadPayload implements PayloadContract
+class OrderExtendInfoPayload implements PayloadContract
 {
     public function __construct(
         protected ?IsSignBackEnum $isSignBack = null,

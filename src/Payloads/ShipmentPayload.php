@@ -45,7 +45,7 @@ class ShipmentPayload implements PayloadContract
         protected ?string $pickupAppointTimeZone = null,
         protected ?string $remark = null,
         protected ?bool $isBbd = null,
-        protected ?OrderExtendInfoPayloadPayload $orderExtendInfo = null,
+        protected ?OrderExtendInfoPayload $orderExtendInfo = null,
         protected ?CustomsInfoPayload $customsInfo = null,
         protected ?array $addedServices = null,
         protected ?array $children = null,
