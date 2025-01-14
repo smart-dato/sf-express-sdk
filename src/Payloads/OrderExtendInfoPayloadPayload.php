@@ -3,9 +3,9 @@
 namespace SmartDato\SfExpress\Payloads;
 
 use SmartDato\SfExpress\Contracts\PayloadContract;
-use SmartDato\SfExpress\Enums\OrderExtendedInfo\BusinessMode;
-use SmartDato\SfExpress\Enums\OrderExtendedInfo\IsSelfPickEnum;
-use SmartDato\SfExpress\Enums\OrderExtendedInfo\IsSignBackEnum;
+use SmartDato\SfExpress\Enums\OrderExtendInfo\BusinessMode;
+use SmartDato\SfExpress\Enums\OrderExtendInfo\IsSelfPickEnum;
+use SmartDato\SfExpress\Enums\OrderExtendInfo\IsSignBackEnum;
 
 class OrderExtendInfoPayloadPayload implements PayloadContract
 {

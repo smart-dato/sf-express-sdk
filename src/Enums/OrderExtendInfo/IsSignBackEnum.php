@@ -1,6 +1,6 @@
 <?php
 
-namespace SmartDato\SfExpress\Enums\OrderExtendedInfo;
+namespace SmartDato\SfExpress\Enums\OrderExtendInfo;
 
 enum IsSignBackEnum: string
 {
