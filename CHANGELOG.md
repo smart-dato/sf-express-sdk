@@ -2,6 +2,10 @@
 
 All notable changes to `sf-express-sdk` will be documented in this file.
 
+## 0.0.5 - 2025-03-14
+
+**Full Changelog**: https://github.com/smart-dato/sf-express-sdk/compare/0.0.4...0.0.5
+
 ## 0.0.4 - 2025-03-14
 
 ### What's Changed
