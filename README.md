@@ -19,24 +19,45 @@ A Laravel package for the SF Express international open API. It creates shipment
 composer require smart-dato/sf-express-sdk
 ```
 
+Publish the config file:
+
+```bash
+php artisan vendor:publish --tag="sf-express-sdk-config"
+```
+
+```dotenv
+SF_EXPRESS_BASE_URL=https://api-ifsp-sit.sf.global
+SF_EXPRESS_API_KEY=your-app-key
+SF_EXPRESS_SECRET=your-app-secret
+SF_EXPRESS_ENCODING_AES_KEY=your-encoding-aes-key
+```
+
+`https://api-ifsp-sit.sf.global` is SF's SIT (sandbox) environment.
+
 ## Usage
 
-Construct the client with your SF Express base URL and credentials:
+The `SfExpress` facade uses the configured credentials:
+
+```php
+use SmartDato\SfExpress\Facades\SfExpress;
+
+$tracking = SfExpress::getTrackingStatus($payload->toJson());
+```
+
+Or construct the client yourself; any argument you leave out falls back to the config:
 
 ```php
 use SmartDato\SfExpress\SfExpress;
 
 $sf = new SfExpress(
-    baseUrl: 'https://api-ifsp-sit.sf.global', // SF's SIT (sandbox) environment
+    baseUrl: 'https://api-ifsp-sit.sf.global',
     appKey: 'your-app-key',
     appSecret: 'your-app-secret',
     encodingAesKey: 'your-encoding-aes-key',
 );
 ```
 
-**The constructor authenticates immediately** — it calls `/openapi/api/token` and throws `SfExpressGenericException` if SF rejects the credentials. Build the client when you are about to make calls, not eagerly at boot.
-
-> A config file maps `SF_EXPRESS_API_KEY` and `SF_EXPRESS_SECRET` to `sf-express-sdk.app.key` and `.secret`, but it is only consulted for the token request. The base URL has no config fallback, and the app key is also needed for signing, so pass all four arguments explicitly. For the same reason the registered `SfExpress` facade cannot be used as-is.
+The client fetches its access token from `/openapi/api/token` on the first API call, not when it is constructed. `SfExpressGenericException` is thrown if SF rejects the credentials.
 
 Every method takes the request as a **JSON string**. The payload classes build that string for you with `toJson()`.
 
