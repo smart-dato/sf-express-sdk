@@ -12,33 +12,20 @@ use SmartDato\SfExpress\Exceptions\SfExpressGenericException;
 
 class SfExpress
 {
-    private string $token;
+    private ?string $token = null;
 
-    private BizMsgCrypt $bizCrypt;
+    private ?BizMsgCrypt $bizCrypt = null;
 
-    private int $timestamp;
-
-    private string $nonce;
-
-    /**
-     * @throws SfExpressGenericException
-     * @throws ConnectionException
-     * @throws Exception
-     */
     public function __construct(
         protected ?string $baseUrl = null,
         protected ?string $appKey = null,
         protected ?string $appSecret = null,
         protected ?string $encodingAesKey = null,
-
     ) {
-        $response = $this->accessToken(
-            $appKey,
-            $appSecret
-        );
-
-        $this->token = $response['apiResultData']['accessToken'];
-        $this->initCommonData();
+        $this->baseUrl ??= (string) config('sf-express-sdk.base_url');
+        $this->appKey ??= (string) config('sf-express-sdk.app.key');
+        $this->appSecret ??= (string) config('sf-express-sdk.app.secret');
+        $this->encodingAesKey ??= (string) config('sf-express-sdk.app.encoding_aes_key');
     }
 
     /**
@@ -49,8 +36,8 @@ class SfExpress
     {
         $response = Http::baseUrl($this->baseUrl)
             ->get('/openapi/api/token', [
-                'appKey' => $appKey ?? config('sf-express-sdk.app.key'),
-                'appSecret' => $appSecret ?? config('sf-express-sdk.app.secret'),
+                'appKey' => $appKey ?? $this->appKey,
+                'appSecret' => $appSecret ?? $this->appSecret,
             ]);
 
         if ($response->failed()) {
@@ -71,18 +58,25 @@ class SfExpress
     }
 
     /**
+     * Fetches the access token on first use, so constructing the client never hits the network.
+     *
+     * @throws ConnectionException
+     * @throws SfExpressGenericException
      * @throws Exception
      */
-    private function initCommonData(): void
+    private function bizCrypt(): BizMsgCrypt
     {
-        $this->bizCrypt = new BizMsgCrypt(
+        if ($this->bizCrypt !== null) {
+            return $this->bizCrypt;
+        }
+
+        $this->token = $this->accessToken()['apiResultData']['accessToken'];
+
+        return $this->bizCrypt = new BizMsgCrypt(
             $this->token,
             $this->encodingAesKey,
             $this->appKey
         );
-
-        $this->timestamp = (int) floor(microtime(true) * 1000);
-        $this->nonce = Str::uuid()->toString();
     }
 
     /**
@@ -92,7 +86,7 @@ class SfExpress
     {
         $response = $this->sendRequest($data, 'IUOP_CREATE_ORDER');
 
-        $message = $this->bizCrypt->decrypt($response['apiResultData']);
+        $message = $this->bizCrypt()->decrypt($response['apiResultData']);
 
         return json_decode($message, true, 512, JSON_THROW_ON_ERROR);
     }
@@ -104,18 +98,21 @@ class SfExpress
      */
     private function sendRequest($data, $messageType): array
     {
-        $encryptedMsg = $this->bizCrypt->encrypt(
+        $timestamp = (int) floor(microtime(true) * 1000);
+        $nonce = Str::uuid()->toString();
+
+        $encryptedMsg = $this->bizCrypt()->encrypt(
             $data,
-            $this->timestamp,
-            $this->nonce
+            $timestamp,
+            $nonce
         );
 
         $response = Http::baseUrl($this->baseUrl)
             ->withHeaders([
                 'appKey' => $this->appKey,
                 'token' => $this->token,
-                'timestamp' => $this->timestamp,
-                'nonce' => $this->nonce,
+                'timestamp' => $timestamp,
+                'nonce' => $nonce,
                 'signature' => $encryptedMsg['signature'],
                 'msgType' => $messageType,
                 'lang' => 'en',
@@ -150,7 +147,7 @@ class SfExpress
     public function getTrackingStatus(string $data): array
     {
         $response = $this->sendRequest($data, 'GTS_QUERY_TRACK');
-        $message = $this->bizCrypt->decrypt($response['apiResultData']);
+        $message = $this->bizCrypt()->decrypt($response['apiResultData']);
 
         return json_decode($message, true, 512, JSON_THROW_ON_ERROR);
     }
@@ -164,7 +161,7 @@ class SfExpress
     public function getShipmentDetails(string $data): array
     {
         $response = $this->sendRequest($data, 'IUOP_QUERY_ORDER');
-        $message = $this->bizCrypt->decrypt($response['apiResultData']);
+        $message = $this->bizCrypt()->decrypt($response['apiResultData']);
 
         return json_decode($message, true, 512, JSON_THROW_ON_ERROR);
     }
