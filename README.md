@@ -1,47 +1,136 @@
-# This is my package sf-express-sdk
+# SF Express SDK
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/smart-dato/sf-express-sdk.svg?style=flat-square)](https://packagist.org/packages/smart-dato/sf-express-sdk)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/smart-dato/sf-express-sdk/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/smart-dato/sf-express-sdk/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/smart-dato/sf-express-sdk/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/smart-dato/sf-express-sdk/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/smart-dato/sf-express-sdk/code-style.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/smart-dato/sf-express-sdk/actions?query=workflow%3A%22Code+style%22+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/smart-dato/sf-express-sdk.svg?style=flat-square)](https://packagist.org/packages/smart-dato/sf-express-sdk)
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+A Laravel package for the SF Express international open API. It creates shipments, queries order details and fetches tracking, handling the API's AES message encryption and request signing for you.
 
-## Support us
+## Requirements
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/sf-express-sdk.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/sf-express-sdk)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+- PHP 8.2+
+- Laravel 10 – 13
+- The `openssl` PHP extension
 
 ## Installation
-
-You can install the package via composer:
 
 ```bash
 composer require smart-dato/sf-express-sdk
 ```
 
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --tag="sf-express-sdk-config"
-```
-
-This is the contents of the published config file:
-
-```php
-return [
-];
-```
-
 ## Usage
 
+Construct the client with your SF Express base URL and credentials:
+
 ```php
-$sfExpress = new SmartDato\SfExpress();
-echo $sfExpress->echoPhrase('Hello, SmartDato!');
+use SmartDato\SfExpress\SfExpress;
+
+$sf = new SfExpress(
+    baseUrl: 'https://api-ifsp-sit.sf.global', // SF's SIT (sandbox) environment
+    appKey: 'your-app-key',
+    appSecret: 'your-app-secret',
+    encodingAesKey: 'your-encoding-aes-key',
+);
 ```
+
+**The constructor authenticates immediately** — it calls `/openapi/api/token` and throws `SfExpressGenericException` if SF rejects the credentials. Build the client when you are about to make calls, not eagerly at boot.
+
+> A config file maps `SF_EXPRESS_API_KEY` and `SF_EXPRESS_SECRET` to `sf-express-sdk.app.key` and `.secret`, but it is only consulted for the token request. The base URL has no config fallback, and the app key is also needed for signing, so pass all four arguments explicitly. For the same reason the registered `SfExpress` facade cannot be used as-is.
+
+Every method takes the request as a **JSON string**. The payload classes build that string for you with `toJson()`.
+
+### Create a shipment
+
+Sends an `IUOP_CREATE_ORDER` message.
+
+```php
+use SmartDato\SfExpress\Enums\Shipment\CurrencyEnum;
+use SmartDato\SfExpress\Enums\Shipment\InterProductCodeEnum;
+use SmartDato\SfExpress\Payloads\ParcelInfoPayload;
+use SmartDato\SfExpress\Payloads\PaymentInfoPayload;
+use SmartDato\SfExpress\Payloads\ShipmentPayload;
+use SmartDato\SfExpress\Payloads\ShippingPartyPayload;
+
+$payload = new ShipmentPayload(
+    customerCode: 'your-customer-code',
+    interProductCode: InterProductCodeEnum::INT0014,
+    parcelQuantity: 1,
+    customerOrderNumber: 'order-1001',
+    parcels: [
+        new ParcelInfoPayload(
+            amount: 25.0,
+            name: 'Gloves',
+            eName: 'Gloves',
+            originCountry: 'CN',
+            quantity: 1,
+            unit: 'your-unit',
+        ),
+    ],
+    paymentInfo: new PaymentInfoPayload(
+        payMethod: 'your-pay-method',
+        payMonthCard: 'your-monthly-account',
+        taxPayMethod: 'your-tax-pay-method',
+        taxPayMonthCard: '',
+    ),
+    receiverInfo: new ShippingPartyPayload(
+        address: 'Werner-Heisenberg-Allee 25',
+        regionSecond: '106A',
+        contact: 'Jane Doe',
+        country: 'DE',
+        postCode: '80939',
+        regionFirst: 'München',
+        phoneNumber: '+49 89 000000',
+        email: 'jane@example.com',
+    ),
+    senderInfo: new ShippingPartyPayload(
+        address: 'Bismarckstraße 122',
+        regionSecond: '11A',
+        contact: 'Sender GmbH',
+        country: 'DE',
+        postCode: '51373',
+        regionFirst: 'Leverkusen',
+        phoneNumber: '+49 214 000000',
+    ),
+    declaredValue: 25.0,
+    declaredCurrency: CurrencyEnum::EUR,
+    parcelTotalWeight: 0.4,
+    parcelWeightUnit: 'kg',
+    parcelTotalLength: 30,
+    parcelTotalWidth: 20,
+    parcelTotalHeight: 5,
+);
+
+$result = $sf->createShipment($payload->toJson());
+```
+
+`ShipmentPayload` also accepts pickup, customs, extended-info and added-service details — see its constructor for the full list.
+
+### Query shipment details
+
+Sends an `IUOP_QUERY_ORDER` message.
+
+```php
+use SmartDato\SfExpress\Payloads\ShipmentDetailsPayload;
+
+$details = $sf->getShipmentDetails(
+    (new ShipmentDetailsPayload(customerCode: 'your-customer-code', sfWaybillNumber: 'SF0000000000000'))->toJson()
+);
+```
+
+### Track a shipment
+
+Sends a `GTS_QUERY_TRACK` message.
+
+```php
+use SmartDato\SfExpress\Payloads\TrackingPayload;
+
+$tracking = $sf->getTrackingStatus(
+    (new TrackingPayload(sfWaybillNumbers: ['SF0000000000000'], phoneNumber: '0000'))->toJson()
+);
+```
+
+Each method returns the decrypted response decoded into an array. A non-zero `apiResultCode` from SF raises `SfExpressGenericException` with the code and message.
 
 ## Testing
 
@@ -49,13 +138,11 @@ echo $sfExpress->echoPhrase('Hello, SmartDato!');
 composer test
 ```
 
+The tests that call SF's sandbox are skipped by default, since they need real credentials.
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
-
-## Contributing
-
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ## Security Vulnerabilities
 
