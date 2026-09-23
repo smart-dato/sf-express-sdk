@@ -1,6 +1,6 @@
 {
     "name": "smart-dato/sf-express-sdk",
-    "description": "This is my package sf-express-sdk",
+    "description": "SF Express international open API SDK for Laravel",
     "keywords": [
         "SmartDato",
         "laravel",
