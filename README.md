@@ -9,8 +9,8 @@ A Laravel package for the SF Express international open API. It creates shipment
 
 ## Requirements
 
-- PHP 8.2+
-- Laravel 10 – 13
+- PHP 8.4+
+- Laravel 12 – 13
 - The `openssl` PHP extension
 
 ## Installation
