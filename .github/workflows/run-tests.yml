@@ -2,12 +2,9 @@ name: run-tests
 
 on:
   push:
-    paths:
-      - '**.php'
-      - '.github/workflows/run-tests.yml'
-      - 'phpunit.xml.dist'
-      - 'composer.json'
-      - 'composer.lock'
+    branches:
+      - main
+  pull_request:
 
 permissions:
   contents: read
@@ -60,6 +57,7 @@ jobs:
 
   tests:
     name: tests
+    timeout-minutes: 5
     needs: test
     if: ${{ always() }}
     runs-on: ubuntu-latest
