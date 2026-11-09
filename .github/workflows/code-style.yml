@@ -2,13 +2,9 @@ name: Code style
 
 on:
   push:
-    paths:
-      - '**.php'
-      - '.github/workflows/code-style.yml'
+    branches:
+      - main
   pull_request:
-    paths:
-      - '**.php'
-      - '.github/workflows/code-style.yml'
 
 permissions:
   contents: read
