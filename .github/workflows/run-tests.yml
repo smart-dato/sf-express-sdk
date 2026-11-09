@@ -23,10 +23,8 @@ jobs:
         include:
           - laravel: 13.*
             testbench: 11.*
-            carbon: ^3.8.4
           - laravel: 12.*
             testbench: 10.*
-            carbon: ^3.8.4
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
 
@@ -48,7 +46,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "nesbot/carbon:${{ matrix.os == 'windows-latest' && '^^^' || '' }}${{ matrix.carbon }}" --no-interaction --no-update
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction
 
       - name: List Installed Dependencies
@@ -59,11 +57,12 @@ jobs:
 
   tests:
     name: tests
-    if: always()
-    needs: test
-    runs-on: ubuntu-latest
     timeout-minutes: 5
+    needs: test
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Require every matrix job to pass
-        if: ${{ needs.test.result != 'success' }}
-        run: exit 1
+      - name: Check test matrix result
+        env:
+          TEST_RESULT: ${{ needs.test.result }}
+        run: test "$TEST_RESULT" = success
